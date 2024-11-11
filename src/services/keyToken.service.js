@@ -1,12 +1,12 @@
 import keyTokenSchema from "../models/keyToken.model.js";
 
 class KeyTokenService {
-  static createKeyToken = async ({ userId, publicKey }) => {
+  static createKeyToken = async ({ userId, publicKey, privateKey }) => {
     try {
-      const publicKeyString = publicKey.toString();
       const tokens = await keyTokenSchema.create({
         user: userId.toString(),
-        publicKey: publicKeyString,
+        publicKey,
+        privateKey,
       });
 
       return tokens ? tokens.publicKey : null;
