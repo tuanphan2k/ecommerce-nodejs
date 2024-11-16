@@ -4,8 +4,8 @@ import KeyTokenService from "./keyToken.service.js";
 import { createTokenPair } from "../auth/authUtils.js";
 import shopModel from "../models/shop.model.js";
 import { getInfoData } from "../utils/index.js";
-import { BadRequestError } from "../core/error.response.js";
-import { CREATED } from "../core/success.response.js";
+import { AuthFailureError, BadRequestError } from "../core/error.response.js";
+import { findByEmail } from "./shop.service.js";
 
 const RoleShop = {
   SHOP: "SHOP",
@@ -15,6 +15,53 @@ const RoleShop = {
 };
 
 class AccessService {
+  /*
+    1. Check email exist
+    2. Compare password
+    3. Create AT, RT and save RT to db
+    4. Generate tokens
+    5. Return tokens and user info
+  */
+  static logIn = async ({ email, password, refreshToken = null }) => {
+    // 1
+    const foundShop = await findByEmail({ email });
+    if (!foundShop) throw new BadRequestError("Shop not found!");
+
+    // 2
+    const match = await bcrypt.compare(password, foundShop.password);
+    if (!match) throw new AuthFailureError("Password or email is incorrect!");
+
+    // 3
+    const privateKey = crypto.randomBytes(64).toString("hex");
+    const publicKey = crypto.randomBytes(64).toString("hex");
+
+    // 4
+    const tokens = await createTokenPair(
+      {
+        userId: foundShop._id,
+        email,
+      },
+      publicKey,
+      privateKey
+    );
+
+    await KeyTokenService.createKeyToken({
+      userId: foundShop._id,
+      publicKey,
+      privateKey,
+      refreshToken: tokens.refreshToken,
+    });
+
+    // 5
+    return {
+      shop: getInfoData({
+        object: foundShop,
+        fields: ["_id", "name", "email"],
+      }),
+      tokens,
+    };
+  };
+
   static signUp = async ({ name, email, password }) => {
     // check email exist
     const holderShop = await shopModel.findOne({ email }).lean();

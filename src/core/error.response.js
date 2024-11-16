@@ -10,6 +10,7 @@ const StatusCodes = {
 const ReasonStatusCode = {
   FORBIDDEN: "Bad request error",
   CONFLICT: "Conflict error",
+  UNAUTHORIZED: "Unauthorized error",
 };
 
 class ErrorResponse extends Error {
@@ -30,11 +31,25 @@ class ConflictRequestError extends ErrorResponse {
 
 class BadRequestError extends ErrorResponse {
   constructor(
-    message = ReasonStatusCode.CONFLICT,
-    status = StatusCodes.CONFLICT
+    message = ReasonStatusCode.BAD_REQUEST,
+    status = StatusCodes.BAD_REQUEST
   ) {
     super(message, status);
   }
 }
 
-export { ErrorResponse, ConflictRequestError, BadRequestError };
+class AuthFailureError extends ErrorResponse {
+  constructor(
+    message = ReasonStatusCode.UNAUTHORIZED,
+    status = StatusCodes.UNAUTHORIZED
+  ) {
+    super(message, status);
+  }
+}
+
+export {
+  ErrorResponse,
+  ConflictRequestError,
+  BadRequestError,
+  AuthFailureError,
+};
