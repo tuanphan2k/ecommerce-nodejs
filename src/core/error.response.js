@@ -5,12 +5,14 @@ const StatusCodes = {
   NOT_FOUND: 404,
   CONFLICT: 409,
   INTERNAL_SERVER_ERROR: 500,
+  NOT_FOUND: 404,
 };
 
 const ReasonStatusCode = {
   FORBIDDEN: "Bad request error",
   CONFLICT: "Conflict error",
   UNAUTHORIZED: "Unauthorized error",
+  NOT_FOUND: "Not found error",
 };
 
 class ErrorResponse extends Error {
@@ -47,9 +49,19 @@ class AuthFailureError extends ErrorResponse {
   }
 }
 
+class NotFundError extends ErrorResponse {
+  constructor(
+    message = ReasonStatusCode.NOT_FOUND,
+    status = StatusCodes.NOT_FOUND
+  ) {
+    super(message, status);
+  }
+}
+
 export {
   ErrorResponse,
   ConflictRequestError,
   BadRequestError,
   AuthFailureError,
+  NotFundError,
 };

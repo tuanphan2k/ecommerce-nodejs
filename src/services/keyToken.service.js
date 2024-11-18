@@ -1,4 +1,5 @@
-import keyTokenSchema from "../models/keyToken.model.js";
+import keyTokenModel from "../models/keyToken.model.js";
+import { Types } from "mongoose";
 
 class KeyTokenService {
   static createKeyToken = async ({
@@ -18,7 +19,7 @@ class KeyTokenService {
       };
       const options = { upsert: true, new: true };
 
-      const tokens = await keyTokenSchema.findOneAndUpdate(
+      const tokens = await keyTokenModel.findOneAndUpdate(
         filter,
         update,
         options
@@ -28,6 +29,16 @@ class KeyTokenService {
     } catch (error) {
       return error;
     }
+  };
+
+  static findByUserId = async (userId) => {
+    return await keyTokenModel
+      .findOne({ user: new Types.ObjectId(userId) })
+      .lean();
+  };
+
+  static removeKeyById = async (userId) => {
+    return await keyTokenModel.deleteOne({ _id: new Types.ObjectId(userId) });
   };
 }
 
